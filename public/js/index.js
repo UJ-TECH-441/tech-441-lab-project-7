@@ -5,11 +5,12 @@ $(document).ready(async () => {
 	const user = await confirmLogin();
 	if (user) {
 		$('body').show();
-		$('footer').show();
 		Chart.register(ChartDataLabels);
 		fetchArtists();
 		fetchChartDates();
-		await getTop100('1980-01-05');
+		//await getTop100('1980-01-05');
+		await getFavorites();
+		$('footer').show();
 	}
 });
 
@@ -23,16 +24,17 @@ const handleError = err => {
 	return true;
 }
 
+const processFetchResponse = async res => {
+	if (res.redirected) return location.href = res.url;
+	if (!res.ok) throw new Error(res.statusText);
+	return res.json();
+};
+
 const confirmLogin = async () => {
 	return new Promise((resolve, reject) => {
 		try {
 			fetch('/user/login-check')
-				.then(res => {
-					if (res.redirected) return location.href = res.url;
-					if (res.status === 401) return resolve(false);
-					if (!res.ok) throw new Error(res.statusText);
-					return res.json();
-				})
+				.then(res => processFetchResponse(res))
 				.then(json => resolve(json))
 				.catch(err => handleError(err) && reject());
 		} catch (err) {
@@ -41,28 +43,67 @@ const confirmLogin = async () => {
 	});
 };
 
+const logout = async () => {
+	return new Promise((resolve, reject) => {
+		try {
+			fetch('/user/logout')
+			.then(res => processFetchResponse(res))
+			.then(json => resolve(json))
+			.catch(err => handleError(err) && reject());
+		} catch (err) {
+			handleError(err) && reject()
+		}
+	});
+};
+
+const setHeartMouseEvents = () => {
+	$('.heart').on('mouseover', e => heartMouseEvent(e));
+	$('.heart').on('mouseout', e => heartMouseEvent(e));
+	$('.heart').on('click', e => heartMouseEvent(e));
+};
+
 const heartMouseEvent = async event => {
-	const type = event.currentTarget.id.includes('-a-') ? 'artist' : 'song';
+	const type = event.currentTarget.id.includes('-a-') ? 'artists' : 'songs';
 	const element = $(`#${event.currentTarget.id}`);
 	switch (event.originalEvent.type) {
 		case 'mouseover':
-			element.removeClass('fa-regular');
-			element.addClass('fa-solid heart-filled');
+			if (element.hasClass('fa-solid')) {
+				element.removeClass('fa-solid heart-filled');
+				element.addClass('fa-regular');
+			} else {
+				element.removeClass('fa-regular');
+				element.addClass('fa-solid heart-filled');
+			}
 			break;
 		case 'mouseout':
-			element.removeClass('fa-solid heart-filled');
-			element.addClass('fa-regular');
+			if (element.hasClass('fa-solid')) {
+				element.removeClass('fa-solid heart-filled');
+				element.addClass('fa-regular');
+			} else {
+				element.removeClass('fa-regular');
+				element.addClass('fa-solid heart-filled');
+			}
 			break;
 		case 'click':
 			try {
 				await sendHeartEvent(type, event.currentTarget.id.substring(8));
+				if (element.hasClass('fa-solid')) {
+					element.removeClass('fa-solid heart-filled');
+					element.addClass('fa-regular');
+				} else {
+					element.removeClass('fa-regular');
+					element.addClass('fa-solid heart-filled');
+				}
 			} catch (err) {
 				// Logged out?
-				console.log(err);
+				console.error(err);
 			}
 			break;
 	};
 };
+
+const heartIcon = (type, id, isFavorite) =>
+	`<i id="heart-${type}-${id}" class="fa-heart heart ${isFavorite ? 'fa-solid heart-filled' : 'fa-regular'}"></i>`;
 
 const sendHeartEvent = (type, id) => {
 	return new Promise((resolve, reject) => {
@@ -72,13 +113,9 @@ const sendHeartEvent = (type, id) => {
 				body: JSON.stringify({ type, id }),
 				headers: { 'Content-Type': 'application/json '}
 			})
-			.then(res => {
-				if (res.status === 401) return reject(401);
-				if (!res.ok) throw new Error(res.statusText);
-				return res.json();
-			})
-			.then(json => {
-			}).catch(err => handleError(err) && reject());
+			.then(res => processFetchResponse(res))
+			.then(json => resolve())
+			.catch(err => handleError(err) && reject());
 		} catch (err) {
 			handleError(err) && reject();
 		}
@@ -96,12 +133,6 @@ const displayGraph = config => {
 	$('#chartjs-canvas-container').show();
 };
 
-const processFetchResponse = async res => {
-	if (res.redirected) return location.href = res.url;
-	if (!res.ok) throw new Error(res.statusText);
-	return res.json();
-};
-
 const getArtistGraph = async artistId => {
 	return new Promise((resolve, reject) => {
 		try {
@@ -110,8 +141,9 @@ const getArtistGraph = async artistId => {
 			currentScreen = 'artist-graph';
 			fetch(`/artists/${artistId}/songs`)
 			.then(res => processFetchResponse(res))
-			.then(json => {
-				$('#title').html(`${json[0].artist_name}: Chart Performance`);
+			.then(res => {
+				const json = res.data;
+				$('#title').html(`${heartIcon('a', json[0].artist_id, res.isFavorite)} ${json[0].artist_name}: Chart Performance`);
 				const subtitle = (json.length === 1 ? '' : `<div class="bold"><a class="bold" 
 				href="javascript:getMultiSongGraph('${json[0].artist_id}');">View weekly performance for all songs by 
 				${json[0].artist_name.replace(/^The /, 'the ')}</a></div>`) +
@@ -134,6 +166,7 @@ const getArtistGraph = async artistId => {
 					config.options.plugins.datalabels.listeners = {
 						click: (ctx, event) => getSongGraph(json[ctx.dataIndex].song_id)
 					}
+				setHeartMouseEvents();
 				resolve(displayGraph(config));
 			})
 			.catch(err => handleError(err) && reject());
@@ -150,12 +183,11 @@ const getSongGraph = async songId => {
 			clearTitles();
 			currentScreen = 'song-graph';
 			fetch(`/songs/${songId}/graph`)
+			.then(res => processFetchResponse(res))
 			.then(res => {
-				if (!res.ok) throw new Error(res.statusText);
-				return res.json();
-			})
-			.then(data => {
-				$('#title').html(`"${data[0].song_title}" by <a href="javascript:getArtistGraph('${data[0].artist_id}')">${data[0].artist_name}</a>`);
+				const data = res.data;
+				$('#title').html(`${heartIcon('s', data[0].song_id, res.isFavoriteSong)} "${data[0].song_title}" by 
+					${heartIcon('a', data[0].artist_id, res.isFavoriteArtist)} <a href="javascript:getArtistGraph('${data[0].artist_id}')">${data[0].artist_name}</a>`);
 				$('#subtitle').html(`
 				<div class="bold">All songs by ${data[0].artist_name.replace(/^The /, 'the ')}: 
 				<a href="javascript:getArtistGraph('${data[0].artist_id}')">Peak position</a> | 
@@ -163,10 +195,7 @@ const getSongGraph = async songId => {
 				<div>Click graph points to view full charts for each week</div>
 			`);
 				fetch(`/artists/${data[0].artist_id}/songs`)
-				.then(res => {
-					if (!res.ok) throw new Error(res.statusText);
-					return res.json();
-				})
+				.then(res => processFetchResponse(res))
 				.then(otherSongs => {
 					if (otherSongs.length > 1) {
 						const artistOtherSongs = document.createElement('select');
@@ -198,6 +227,7 @@ const getSongGraph = async songId => {
 					click: (ctx, event) => getTop100(data[ctx.dataIndex].date.substring(0, 10))
 				};
 				config.options.tooltip = {yAlign: 'bottom'};
+				setHeartMouseEvents();
 				resolve(displayGraph(config));
 			}).catch(err => handleError(err) && reject());
 		} catch (err) {
@@ -213,10 +243,7 @@ const getMultiSongGraph = async artistId => {
 			clearTitles();
 			currentScreen = 'multi-song-graph';
 			fetch(`/artists/${artistId}/songs/graph`)
-			.then(res => {
-				if (!res.ok) throw new Error(res.statusText);
-				return res.json();
-			})
+			.then(res => processFetchResponse(res))
 			.then(data => {
 				$('#title').html(`<div class="bold">All songs by ${data.charts[0][0].artist_name}</div> `);
 				$('#subtitle').html(`
@@ -273,10 +300,7 @@ const getTop100 = async chartDate => {
 			clearTitles();
 			currentScreen = 'top-100';
 			fetch(`/charts/${chartDate}`)
-			.then(res => {
-				if (!res.ok) throw new Error(res.statusText);
-				return res.json();
-			})
+			.then(res => processFetchResponse(res))
 			.then(data => {
 				const template = Handlebars.compile($('#top100-template').html());
 				$('#title').html('<div>Top 100 Chart: <span id="other-chart-date"></span></div>');
@@ -287,9 +311,8 @@ const getTop100 = async chartDate => {
 				$('#chartjs-canvas-container').hide();
 				$('#content-container').html(template(data));
 				$('#content-container').show();
-				$('.heart').on('mouseover', e => heartMouseEvent(e));
-				$('.heart').on('mouseout', e => heartMouseEvent(e));
-				$('.heart').on('click', e => heartMouseEvent(e));
+				setHeartMouseEvents();
+				resolve();
 			})
 			.catch(err => handleError(err) && reject());
 		} catch (err) {
@@ -297,6 +320,30 @@ const getTop100 = async chartDate => {
 		}
 	});
 };
+
+const getFavorites = async () => {
+	return new Promise((resolve, reject) => {
+		try {
+			clearTitles();
+			currentScreen = 'favorites';
+			fetch(`/user/favorites`)
+			.then(res => processFetchResponse(res))
+			.then(data => {
+				$('#chartjs-canvas-container').hide();
+				const template = Handlebars.compile($('#favorites-template').html());
+				$('#content-container').html(template(data));
+				$('#content-container').show();
+				setHeartMouseEvents();
+				$('#title').html('<div>Your Favorites</div>');
+				resolve();
+			})
+			.catch(err => handleError(err) && reject());
+		} catch (err) {
+			handleError(err) && reject();
+		}
+	});
+};
+
 
 const baseDatasets = [{
 	borderColor: '#bbccdd',
@@ -371,7 +418,7 @@ const baseConfig = {
 
 const fetchChartDates = chartId => {
 	fetch('/charts/dates')
-	.then(res => res.json())
+	.then(res => processFetchResponse(res))
 	.then(json => {
 		$('#chart-date').append(`<option value="">Select chart date</option>`);
 		json.forEach(row => {
@@ -390,7 +437,7 @@ const fetchChartDates = chartId => {
 
 const fetchArtists = artistId => {
 	fetch('/artists')
-	.then(res => res.json())
+	.then(res => processFetchResponse(res))
 	.then(json => {
 		$('#artists').append(`<option value="">Select artist</option>`);
 		json.forEach(artist => {

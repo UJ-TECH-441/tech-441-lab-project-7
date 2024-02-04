@@ -32,7 +32,7 @@ module.exports = app => {
 			if (min <= max) dates.push(min.toDate());
 		} while (min <= max);
 
-		res.json({ dates, charts: Object.values(songs)} );
+		res.json({ dates, charts: Object.values(songs) });
 	});
 
 	app.get('/artists/:id/songs', util.checkAuth, async (req, res, next) => {
@@ -41,6 +41,7 @@ module.exports = app => {
 		const data = await database.query(
 			`select * from artist_song_view where artist_id = '${req.params.id}' order by first_week`);
 		if (data[0].length === 0) return res.sendStatus(404);
-		res.json(data[0]);
+		const isFavorite = !!req.user.data.favorites.artists.find(a => a.id === artistId);
+		res.json({ data: data[0], isFavorite });
 	});
 };

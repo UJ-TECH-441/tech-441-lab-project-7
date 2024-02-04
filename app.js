@@ -8,7 +8,9 @@ const session = require('express-session');
 const MemoryStore = require('memorystore')(session);
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
+const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
+const userService = require('./services/service-user');
 require('dotenv').config({ path: ['.env.local', '.env'] });
 
 // Create Express instance
@@ -35,16 +37,36 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 passport.use(new LocalStrategy((username, password, done) => {
-	process.nextTick(() => {
-		if (username?.toLowerCase() !== 'u' || password !== 'p') {
-			return done(null, false, {message: 'Unknown user ' + username});
+	process.nextTick(async () => {
+		let user;
+		const dbUser = await userService.getUser(username);
+		if (dbUser[0].length > 0) {
+			bcrypt.compare(password, dbUser[0][0].password, async (err, result) => {
+				if (err) {
+					console.error(err);
+				} else if (result) {
+					user = Object.assign({}, dbUser[0][0]);
+					user.favorites = await userService.getUserFavorites(user.id);
+					delete user.password;
+					return done(null, user);
+				}
+				return done(null, false, { message: `Unknown user ${username}` });
+			});
 		}
-		return done(null, { id: 'abc', username });
 	});
 }));
 
-passport.serializeUser((user, done) => done(null, user.id));
-passport.deserializeUser((id, done) => done(null,{ id: 'abc', username: 'u' }));
+passport.serializeUser(function(user, cb) {
+	process.nextTick(function() {
+		cb(null, { id: user.id, data: user });
+	});
+});
+
+passport.deserializeUser(function(user, cb) {
+	process.nextTick(function() {
+		return cb(null, user);
+	});
+});
 
 //app.use(passport.authenticate('session'));
 

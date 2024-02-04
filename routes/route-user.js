@@ -11,28 +11,23 @@ module.exports = app => {
 		res.sendStatus(200);
 	});
 
-//	app.get('/user/logout', util.auth, async (req, res, next) => {
-//		req.session.user = null;
-//		req.session.save(err => {
-//			if (err) next(err);
-//			req.session.regenerate(err => {
-//				if (err) next(err);
-//				req.logout((err) => {
-//					if (err) { console.log(err); return next(err); }
-//					res.json({ success: true });
-//				});
-//			})
-//		})
-//	});
+	app.get('/user/logout', util.checkAuth, async (req, res, next) => {
+		req.session.user = null;
+		req.session.save(err => {
+			if (err) next(err);
+			req.session.regenerate(err => {
+				if (err) next(err);
+				req.logout((err) => {
+					if (err) { console.log(err); return next(err); }
+					res.redirect('/');
+				});
+			})
+		})
+	});
 
 	app.get('/user/favorites', util.checkAuth, async (req, res, next) => {
 		try {
-			if (!['artist', 'song'].includes(req.body.type) || !util.isValidUuid(req.body.id)) {
-				return res.sendStatus(400);
-			}
-			await database.query(`insert into user_fav_${req.body.type} values (?, ?)`,
-				[ req.user.username, req.body.id ]);
-			res.json({success: true});
+			res.json(req.user.data.favorites);
 		} catch (err) {
 			console.error(err);
 			res.sendStatus(500);
@@ -41,11 +36,22 @@ module.exports = app => {
 
 	app.post('/user/favorites', util.checkAuth, async (req, res, next) => {
 		try {
-			if (!['artist', 'song'].includes(req.body.type) || !util.isValidUuid(req.body.id)) {
+			if (!['artists', 'songs'].includes(req.body.type) || !util.isValidUuid(req.body.id)) {
 				return res.sendStatus(400);
 			}
-			await database.query(`insert into user_fav_${req.body.type} values (?, ?)`,
-				[ req.user.username, req.body.id ]);
+			const index = req.user.data.favorites[req.body.type].findIndex(fav => fav.id === req.body.id);
+			if (index >= 0) {
+				await database.query(`delete from user_fav_${req.body.type} where user_id = ? and fav_id = ?`,
+                	[ req.user.id, req.body.id]);
+				req.user.data.favorites[req.body.type].splice(index, 1);
+			} else {
+				await database.query(`insert into user_fav_${req.body.type} values (?, ?)`,
+					[req.user.id, req.body.id]);
+				const data = await database.query(`select * from ${req.body.type.replace(/s$/, '')} where id = ?`,
+					[req.body.id]);
+				const name = data[0][0].title || data[0][0].name;
+				req.user.data.favorites[req.body.type].push({id: req.body.id, name});
+			}
 			res.json({success: true});
 		} catch (err) {
 			console.error(err);

@@ -1,7 +1,16 @@
 $(document).ready(async () => {
+	if (location.search.includes('fail')) {
+		$('#subtitle').html('Login failed.');
+	}
 	$('#login-button').on('click', async () => {
 		await login();
 	});
+	$('#login-form input').on('keypress', async event => {
+		if (event.keyCode == 13 || event.which == 13) {
+			await login();
+		}
+	});
+	$('#login-button').focus();
 });
 
 const login = async () => {

@@ -7,6 +7,7 @@
 	<link rel="preload" as="style" href="//fonts.googleapis.com/css2?family=Rubik:wght@400;700&display=swap">
 	<link href="/css/index.css" rel="stylesheet">
 	<link href="/css/chart-view.css" rel="stylesheet">
+	<link href="/css/fav-view.css" rel="stylesheet">
 	<script src="//code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
 	<script src="//kit.fontawesome.com/3d786f588f.js" crossorigin="anonymous"></script>
 	<script src="//cdn.jsdelivr.net/npm/chart.js"></script>
@@ -16,8 +17,21 @@
 </head>
 <body>
 	<header>
-		<div id="title" class="title"></div>
-		<div id="subtitle" class="subtitle"></div>
+		<div></div>
+		<div id="title-container">
+			<div id="title" class="title"></div>
+			<div id="subtitle" class="subtitle"></div>
+		</div>
+		<div id="user-container">
+			<div id="user-menu">
+				<i class="fa-solid fa-user"></i>
+				<i class="fa-solid fa-chevron-down"></i>
+				<div>
+					<a href="javascript:getFavorites()">Favorites</a>
+					<a href="javascript:logout()">Log out</a>
+				</div>
+			</div>
+		</div>
 	</header>
 	<main>
 		<div id="content-container"></div>
@@ -37,6 +51,29 @@
 	</footer>
 </body>
 
+<script id="favorites-template" type="text/x-handlebars-template">
+	<div id="favorites">
+		<div>
+			<div>Artists</div>
+			<div id="fav-artists" class="fav-container">
+				{{#each artists}}
+					<span class="fav"><a href="javascript:getArtistGraph('{{id}}')">{{name}}</a>
+					<i id="heart-a-{{id}}" class="fa-heart fa-solid heart heart-filled"></i></span>
+				{{/each}}
+			</div>
+		</div>
+		<div>
+			<div>Songs</div>
+			<div id="fav-songs" class="fav-container">
+				{{#each songs}}
+					<span class="fav"><a href="javascript:getSongGraph('{{id}}')">{{name}}</a>
+					<i id="heart-s-{{id}}" class="fa-heart fa-solid heart heart-filled"></i></span>
+				{{/each}}
+			</div>
+		</div>
+	</div>
+</script>
+
 <script id="top100-template" type="text/x-handlebars-template">
 	<div id="chart-table-container">
 		<table id="chart-table">
@@ -54,11 +91,11 @@
 				</td>
 				<td>
 					<a onclick="javascript:getSongGraph('{{song_id}}');">{{song_title}}</a>
-					<i id="heart-s-{{song_id}}" class="fa-regular fa-heart heart heart-open"></i>
+					<i id="heart-s-{{song_id}}" class="fa-heart fa-{{#if isUserFavSong}}solid heart heart-filled{{else}}regular heart{{/if}}"></i>
 				</td>
 				<td>
 					<a onclick="javascript:getArtistGraph('{{artist_id}}');">{{artist_name}}</a>
-					<i id="heart-a-{{artist_id}}" class="fa-regular fa-heart heart heart-open"></i>
+					<i id="heart-a-{{artist_id}}" class="fa-heart fa-{{#if isUserFavArtist}}solid heart heart-filled{{else}}regular heart{{/if}}"></i>
 				</td>
 				<td>
 					{{#if isFirstWeek}}
