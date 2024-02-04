@@ -1,0 +1,18 @@
+@use 'main';
+
+#login-form {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	margin-top: 20px;
+
+	> table > tbody > tr > td {
+		font-weight: 500;
+		padding: .3rem;
+	}
+
+	input {
+		width: 10rem;
+	}
+}

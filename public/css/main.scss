@@ -1,0 +1,138 @@
+html {
+	box-sizing: border-box;
+}
+
+*, *:before, *:after {
+	box-sizing: inherit;
+}
+
+*, select {
+	font: 400 16px Rubik, sans-serif;
+}
+
+a {
+	cursor: pointer;
+}
+
+a, a:hover, a:active, a:visited {
+	color: #1880e7;
+	text-decoration: none;
+}
+
+select {
+	margin: 0 10px;
+}
+
+button {
+	background-color: #1880e7;
+	border-color: #1880e7;
+	color: white;
+	padding: .2rem .6rem;
+	text-align: center;
+}
+
+.bold, .bold a {
+	font-weight: 500;
+}
+
+.black, .black a {
+	font-weight: 800;
+}
+
+header {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	margin-top: 20px;
+}
+
+.title, .title > * {
+	font-weight: 500;
+	font-size: 1.5rem;
+	color: #1880e7;
+}
+
+.title {
+	text-align: center;
+}
+
+.title a {
+	text-decoration: underline;
+}
+
+.title select, .title option {
+	font-size: 1.3rem;
+}
+
+.subtitle {
+	text-align: center;
+}
+
+.subtitle > div, .subtitle > select {
+	margin-top: 10px;
+}
+
+main {
+	font-weight: 500;
+}
+
+main > div {
+	margin: 20px;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	font-weight: 500;
+}
+
+#content-container {
+	display: none;
+}
+
+#chartjs-canvas-container {
+	display: none;
+	position: relative;
+	width: 98vw;
+}
+
+#chartjs-canvas-container > span {
+	text-align: center;
+}
+
+#chartjs-canvas {
+	position: relative;
+	width: 98vw;
+	height: 40vh;
+}
+
+.heart {
+	font-size: .85rem;
+	color: #aaa;
+
+	&:hover {
+		cursor: pointer;
+	}
+}
+
+.heart-filled {
+	color: #df0000;
+}
+
+footer {
+	display: none;
+
+	#footer-menus {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+		border-top: dashed 1px #ccc;
+		margin: 20px 0;
+		padding: 20px 0;
+	}
+
+	> div > div {
+		margin: 0 5px;
+	}
+}
