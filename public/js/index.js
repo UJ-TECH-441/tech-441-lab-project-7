@@ -15,8 +15,8 @@ $(document).ready(async () => {
 });
 
 const clearTitles = () => {
-	$('#subtitle').html();
-	$('#subtitle').html();
+	$('#title').html('');
+	$('#subtitle').html('');
 }
 
 const handleError = err => {
@@ -245,7 +245,7 @@ const getMultiSongGraph = async artistId => {
 			fetch(`/artists/${artistId}/songs/graph`)
 			.then(res => processFetchResponse(res))
 			.then(data => {
-				$('#title').html(`<div class="bold">All songs by ${data.charts[0][0].artist_name}</div> `);
+				$('#title').html(`${heartIcon('a', data.charts[0][0].artist_id, data.isFavoriteArtist)} ${data.charts[0][0].artist_name}: All Songs`);
 				$('#subtitle').html(`
 				<div class="bold"><a href="javascript:getArtistGraph('${data.charts[0][0].artist_id}')">View peak positions only</a></div>
 				<div>Click titles to see details for specific songs or graph points to view full chart for corresponding week</div>
@@ -285,6 +285,7 @@ const getMultiSongGraph = async artistId => {
 				};
 				config.options.plugins.datalabels.align = 'bottom';
 				config.options.plugins.datalabels.formatter = (value, ctx) => {};
+				setHeartMouseEvents();
 				resolve(displayGraph(config));
 			})
 			.catch(err => handleError(err) && reject());
@@ -324,11 +325,11 @@ const getTop100 = async chartDate => {
 const getFavorites = async () => {
 	return new Promise((resolve, reject) => {
 		try {
-			clearTitles();
 			currentScreen = 'favorites';
 			fetch(`/user/favorites`)
 			.then(res => processFetchResponse(res))
 			.then(data => {
+				clearTitles();
 				$('#chartjs-canvas-container').hide();
 				const template = Handlebars.compile($('#favorites-template').html());
 				$('#content-container').html(template(data));

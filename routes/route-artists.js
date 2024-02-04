@@ -32,7 +32,8 @@ module.exports = app => {
 			if (min <= max) dates.push(min.toDate());
 		} while (min <= max);
 
-		res.json({ dates, charts: Object.values(songs) });
+		const isFavoriteArtist = !!req.user.data.favorites.artists.find(a => a.id === artistId);
+		res.json({ dates, charts: Object.values(songs), isFavoriteArtist });
 	});
 
 	app.get('/artists/:id/songs', util.checkAuth, async (req, res, next) => {

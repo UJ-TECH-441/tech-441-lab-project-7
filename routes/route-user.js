@@ -1,3 +1,4 @@
+const orderBy = require('lodash/orderBy');
 const passport = require('passport');
 const util = require('../util');
 const database = require('../data/database');
@@ -51,6 +52,7 @@ module.exports = app => {
 					[req.body.id]);
 				const name = data[0][0].title || data[0][0].name;
 				req.user.data.favorites[req.body.type].push({id: req.body.id, name});
+				req.user.data.favorites[req.body.type] = orderBy(req.user.data.favorites[req.body.type], ['name', 'title']);
 			}
 			res.json({success: true});
 		} catch (err) {
