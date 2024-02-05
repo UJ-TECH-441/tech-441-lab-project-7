@@ -1,3 +1,4 @@
+@use "sass:color";
 @import "constants";
 
 html {
@@ -17,7 +18,7 @@ a {
 }
 
 a, a:hover, a:active, a:visited {
-	color: #1880e7;
+	color: $color-blue;
 	text-decoration: none;
 }
 
@@ -26,8 +27,8 @@ select {
 }
 
 button {
-	background-color: #1880e7;
-	border-color: #1880e7;
+	background-color: $color-blue;
+	border-color: $color-blue;
 	color: white;
 	padding: .2rem .6rem;
 	text-align: center;
@@ -44,7 +45,7 @@ button {
 .title, .title > * {
 	font-weight: 500;
 	font-size: 1.5rem;
-	color: #1880e7;
+	color: $color-blue;
 }
 
 .title {

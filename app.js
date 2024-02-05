@@ -39,7 +39,7 @@ app.use(passport.session());
 passport.use(new LocalStrategy((username, password, done) => {
 	process.nextTick(async () => {
 		let user;
-		const dbUser = await userService.getUser(username);
+		const dbUser = await userService.getUserByUsername(username);
 		if (dbUser[0].length > 0) {
 			bcrypt.compare(password, dbUser[0][0].password, async (err, result) => {
 				if (err) {
@@ -48,6 +48,7 @@ passport.use(new LocalStrategy((username, password, done) => {
 					user = Object.assign({}, dbUser[0][0]);
 					user.favorites = await userService.getUserFavorites(user.id);
 					delete user.password;
+					await userService.recordLogin(user.id);
 					return done(null, user);
 				}
 				return done(null, false, { message: `Unknown user ${username}` });

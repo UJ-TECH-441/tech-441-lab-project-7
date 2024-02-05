@@ -8,8 +8,9 @@ $(document).ready(async () => {
 		Chart.register(ChartDataLabels);
 		fetchArtists();
 		fetchChartDates();
-		//await getTop100('1980-01-05');
-		await getFavorites();
+		console.log(user);
+		$('#user-name').html(user.data.first_name);
+		await getTop100('1980-01-05');
 		$('footer').show();
 	}
 });

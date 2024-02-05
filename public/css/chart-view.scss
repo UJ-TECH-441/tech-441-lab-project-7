@@ -1,3 +1,4 @@
+@use "sass:color";
 @import "constants";
 
 td {
@@ -37,17 +38,17 @@ td {
 }
 
 .change-new {
-	color: #1469be;
+	color: $color-blue-dark;
 }
 
 .change-up {
-	color: #009f00;
+	color: $color-green;
 }
 
 .change-down {
-	color: #df0000;
+	color: $color-red;
 }
 
 .change-none {
-	color: #777;
+	color: $color-gray-dark;
 }

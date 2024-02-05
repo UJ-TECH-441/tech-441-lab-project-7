@@ -1,3 +1,5 @@
+@use "sass:color";
+@import "constants";
 @import 'main';
 
 body {
@@ -53,6 +55,11 @@ header {
 	position: relative;
 	display: inline-block;
 	width: 100px;
+	white-space: nowrap;
+
+	> i  {
+		vertical-align: middle;
+	}
 
 	> div {
 		display: none;
@@ -78,6 +85,11 @@ header {
 	&:hover > div {
 		display: block;
 	}
+}
+
+#user-name {
+	font-size: .85rem;
+	color: $color-blue;
 }
 
 #content-container {

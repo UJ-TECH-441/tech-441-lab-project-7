@@ -1,7 +1,7 @@
 const database = require('../data/database');
 
 module.exports = {
-	getUser: async username => {
+	getUserByUsername: async username => {
 		return await database.query('select * from user where lower(username) = ?', [ username ]);
 	},
 
@@ -12,5 +12,9 @@ module.exports = {
     		u.fav_id = s.id where u.user_id = ? order by lower(s.title)`, [ userId ]);
 		const favorites = { artists: artists[0], songs: songs[0] };
 		return favorites;
+	},
+
+	recordLogin: async userId => {
+		return await database.query('update user set last_login_date = ? where id = ?', [ new Date(), userId ]);
 	}
 };
