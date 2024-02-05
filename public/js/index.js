@@ -103,7 +103,7 @@ const heartMouseEvent = async event => {
 };
 
 const heartIcon = (type, id, isFavorite) =>
-	`<i id="heart-${type}-${id}" class="fa-heart heart ${isFavorite ? 'fa-solid heart-filled' : 'fa-regular'}"></i>`;
+	`<i id="heart-${type}-${id}" class="fa-heart heart heart-large ${isFavorite ? 'fa-solid heart-filled' : 'fa-regular'}"></i>`;
 
 const sendHeartEvent = (type, id) => {
 	return new Promise((resolve, reject) => {
