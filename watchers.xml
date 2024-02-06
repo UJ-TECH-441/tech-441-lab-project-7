@@ -14,7 +14,7 @@
     <option name="outputFromStdout" value="false" />
     <option name="program" value="sass" />
     <option name="runOnExternalChanges" value="true" />
-    <option name="scopeName" value="/public/css" />
+    <option name="scopeName" value="All Places" />
     <option name="trackOnlyRoot" value="true" />
     <option name="workingDir" value="" />
     <envs />
