@@ -7,7 +7,7 @@ body {
 }
 
 main {
-	font-weight: 500;
+	font-weight: $font-weight-normal;
 }
 
 main > div {
@@ -16,7 +16,7 @@ main > div {
 	flex-direction: row;
 	justify-content: center;
 	align-items: center;
-	font-weight: 500;
+	font-weight: $font-weight-normal;
 }
 
 header {

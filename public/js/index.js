@@ -1,18 +1,24 @@
 let currentGraph;
-let currentScreen;
+let currentGraphFunction;
+let currentGraphArg;
+let activeResizes = 0;
 
 $(document).ready(async () => {
 	const user = await confirmLogin();
 	if (user) {
-		$('body').show();
 		Chart.register(ChartDataLabels);
 		fetchArtists();
 		fetchChartDates();
-		console.log(user);
 		$('#user-name').html(user.data.first_name);
-		await getTop100('1980-01-05');
-		$('footer').show();
+		$('body').show();
 	}
+	$(window).on('resize', () => {
+		activeResizes++;
+		setTimeout(() => {
+			activeResizes--;
+			if (activeResizes === 0 && currentGraphFunction) currentGraphFunction(currentGraphArg);
+		}, 500);
+	});
 });
 
 const clearTitles = () => {
@@ -139,7 +145,8 @@ const getArtistGraph = async artistId => {
 		try {
 			if (!artistId) return resolve();
 			clearTitles();
-			currentScreen = 'artist-graph';
+			currentGraphFunction = getArtistGraph;
+			currentGraphArg = artistId;
 			fetch(`/artists/${artistId}/songs`)
 			.then(res => processFetchResponse(res))
 			.then(res => {
@@ -163,10 +170,14 @@ const getArtistGraph = async artistId => {
 				config.options.plugins.datalabels.color = ctx => '#1880e7';
 				config.options.plugins.datalabels.align = ctx => ctx.dataIndex === 0 ? 'right' :
 					(json.length > 1 && ctx.dataIndex === json.length - 1) ? 'left' : 'bottom';
-				config.options.plugins.datalabels.formatter = (value, ctx) => `#${json[ctx.dataIndex].peak_position} ${json[ctx.dataIndex].song_title}`,
-					config.options.plugins.datalabels.listeners = {
-						click: (ctx, event) => getSongGraph(json[ctx.dataIndex].song_id)
-					}
+				config.options.plugins.datalabels.formatter = (value, ctx) => {
+					let title = json[ctx.dataIndex].song_title;
+					if (title.length >= 8) title = title.replace(/^(.{8}\w*)\s/, '$1\n');
+					return `#${json[ctx.dataIndex].peak_position} ${title}`;
+				};
+				config.options.plugins.datalabels.listeners = {
+					click: (ctx, event) => getSongGraph(json[ctx.dataIndex].song_id)
+				}
 				setHeartMouseEvents();
 				resolve(displayGraph(config));
 			})
@@ -182,7 +193,8 @@ const getSongGraph = async songId => {
 		try {
 			if (!songId) return resolve();
 			clearTitles();
-			currentScreen = 'song-graph';
+			currentGraphFunction = getSongGraph;
+			currentGraphArg = songId;
 			fetch(`/songs/${songId}/graph`)
 			.then(res => processFetchResponse(res))
 			.then(res => {
@@ -242,7 +254,8 @@ const getMultiSongGraph = async artistId => {
 		try {
 			if (!artistId) return resolve();
 			clearTitles();
-			currentScreen = 'multi-song-graph';
+			currentGraphFunction = getMultiSongGraph;
+			currentGraphArg = artistId;
 			fetch(`/artists/${artistId}/songs/graph`)
 			.then(res => processFetchResponse(res))
 			.then(data => {
@@ -300,7 +313,8 @@ const getTop100 = async chartDate => {
 	return new Promise((resolve, reject) => {
 		try {
 			clearTitles();
-			currentScreen = 'top-100';
+			currentGraphFunction = null;
+			currentGraphArg = null;
 			fetch(`/charts/${chartDate}`)
 			.then(res => processFetchResponse(res))
 			.then(data => {
@@ -326,7 +340,7 @@ const getTop100 = async chartDate => {
 const getFavorites = async () => {
 	return new Promise((resolve, reject) => {
 		try {
-			currentScreen = 'favorites';
+			currentGraphFunction = 'favorites';
 			fetch(`/user/favorites`)
 			.then(res => processFetchResponse(res))
 			.then(data => {
@@ -374,7 +388,7 @@ const baseConfig = {
 					font: {
 						family: 'Rubik,sans-serif',
 						size: 13,
-						weight: 500
+						weight: 600
 					}
 				}
 			},
@@ -383,7 +397,7 @@ const baseConfig = {
 				font: {
 					size: 16,
 					family: 'Rubik,sans-serif',
-					weight: 500
+					weight: 600
 				},
 				rotation: 0,
 				offset: 15
@@ -427,6 +441,7 @@ const fetchChartDates = chartId => {
 			$('#chart-date').append(`<option value="${row.id}">${row.date}</option>`);
 		})
 		if (chartId) $('#chart-date').val(chartId);
+		$('footer').show();
 	})
 	.catch(err => console.error(err));
 

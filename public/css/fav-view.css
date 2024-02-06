@@ -15,11 +15,11 @@
   margin-bottom: 0.5rem;
 }
 #favorites > div span, #favorites > div a {
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
 }
 #favorites > div span {
   margin-right: 0.7rem;
 }
 
-/*# sourceMappingURL=data:application/json;charset=utf-8,%7B%22version%22:3,%22sourceRoot%22:%22%22,%22sources%22:%5B%22fav-view.scss%22%5D,%22names%22:%5B%5D,%22mappings%22:%22AAGA;EACC;EACA;;AAEA;EACC;EACA;EACA;EACA;EACA;;AAEA;EACC;EACA;EACA;;AAGD;EACC;EACA;;AAGD;EACC%22,%22file%22:%22fav-view.css%22%7D */
+/*# sourceMappingURL=data:application/json;charset=utf-8,%7B%22version%22:3,%22sourceRoot%22:%22%22,%22sources%22:%5B%22fav-view.scss%22,%22constants.scss%22%5D,%22names%22:%5B%5D,%22mappings%22:%22AAGA;EACC;EACA;;AAEA;EACC;EACA;EACA;EACA;EACA;;AAEA;EACC,aCLgB;EDMhB;EACA;;AAGD;EACC,aCXgB;EDYhB;;AAGD;EACC%22,%22file%22:%22fav-view.css%22%7D */

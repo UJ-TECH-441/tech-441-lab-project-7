@@ -1,5 +1,6 @@
 @use "sass:color";
 @import "constants";
+@import "fonts";
 
 html {
 	box-sizing: border-box;
@@ -10,7 +11,7 @@ html {
 }
 
 *, select {
-	font: 400 16px Rubik, sans-serif;
+	font: $font-weight-normal 16px Rubik, sans-serif;
 }
 
 a {
@@ -35,15 +36,15 @@ button {
 }
 
 .bold, .bold a {
-	font-weight: 500;
+	font-weight: $font-weight-bold;
 }
 
 .black, .black a {
-	font-weight: 800;
+	font-weight: $font-weight-black;
 }
 
 .title, .title > * {
-	font-weight: 500;
+	font-weight: $font-weight-bold;
 	font-size: 1.5rem;
 	color: $color-blue;
 }

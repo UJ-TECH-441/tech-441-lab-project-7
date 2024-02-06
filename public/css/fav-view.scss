@@ -13,13 +13,13 @@
 		border-radius: 20px;
 
 		> div:first-child {
-			font-weight: 600;
+			font-weight: $font-weight-bold;
 			font-size: 1.2rem;
 			margin-bottom: .5rem;
 		}
 
 		span, a {
-			font-weight: 500;
+			font-weight: $font-weight-bold;
 			white-space: nowrap;
 		}
 

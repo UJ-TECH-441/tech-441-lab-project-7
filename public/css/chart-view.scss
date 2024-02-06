@@ -13,7 +13,7 @@ td {
 
 	> tbody > tr {
 		&:first-child td {
-			font-weight: 600;
+			font-weight: $font-weight-bold;
 			background-color: #dedede;
 		}
 
@@ -22,12 +22,12 @@ td {
 			border-bottom: solid 1px #ccc;
 
 			&:first-child {
-				font-weight: 800;
+				font-weight: $font-weight-black;
 				text-align: right;
 			}
 
 			a {
-				font-weight: 500;
+				font-weight: $font-weight-bold;
 			}
 		}
 	}
